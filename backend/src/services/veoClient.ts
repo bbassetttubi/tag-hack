@@ -140,6 +140,7 @@ export async function createVeoVideo({
     {
       projectId: config.gcpProjectId,
       model,
+      durationSeconds: Number(durationSeconds),
       hasImageInput: !!imageBase64,
       hasStorageUri: !!storageUri,
       path,
