@@ -30,7 +30,7 @@ const envSchema = Joi.object({
   METRICS_PORT: Joi.number().integer().min(1024).max(65535).default(9464),
   LOG_LEVEL: Joi.string().default("info"),
   VEO_MODEL_DEFAULT: Joi.string().default("veo-3.1-generate-preview"),
-  VEO_MODEL_FAST: Joi.string().default("veo-3.1-fast-generate-preview"),
+  VEO_MODEL_FAST: Joi.string().default("veo-3.1-generate-preview"),
   VEO_POLL_INTERVAL_MS: Joi.number().positive().default(10_000),
   DEFAULT_SEGMENT_SECONDS: Joi.string().valid("4", "6", "8").default("8"),
   MAX_STORY_DURATION_SECONDS: Joi.number().positive().default(90),
