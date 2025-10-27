@@ -1,131 +1,79 @@
-# Tubi Veo Storytelling Experience
+# Tubi Veo Storytelling App
 
-A collaborative generative AI video storytelling platform for the Tubi mobile app, powered by Google Veo 3.1. Users can create story scenes, tag friends to extend the narrative, and build video chains up to 90 seconds with visual and audio continuity.
+Welcome to the Tubi Veo Storytelling App! This platform allows you to create collaborative, AI-generated video stories. Powered by Google's Veo 3.1, you can start a story, invite friends to add scenes, and watch your narrative unfold with stunning visual and audio continuity.
 
-## Architecture
+## Features
 
-- **Backend** (`backend/`): Express/TypeScript API that manages stories, coordinates Veo job lifecycle via Vertex AI, and persists segments in Firestore.
-- **Frontend** (`frontend/`): React Native (Expo) mobile app styled after Tubi's vertical browsing UX.
-- **Infrastructure**: Firestore (story/segment persistence), Google Cloud Storage (video/thumbnail hosting), Vertex AI (Veo video generation), Prometheus (observability).
+-   **Create Unique Stories**: Start a new story with a text prompt and let Veo generate the opening scene.
+-   **Collaborate with Friends**: Tag friends to add the next scene to your story.
+-   **Seamless Scene Transitions**: Our app uses the last frame of the previous video to ensure a smooth, continuous story.
+-   **Automatic Story Looping**: Once all the scenes are generated, the story will play on a continuous loop, so you can watch your creation from beginning to end, over and over.
+-   **Flexible Video Length**: Choose between 4, 6, or 8-second clips for each scene, up to a total of 90 seconds.
 
-## Quick Start
+## Tech Stack
 
-### 1. Prerequisites
+-   **Frontend**: React Native (Expo) for a cross-platform mobile app.
+-   **Backend**: A robust Node.js and Express server handles the logic.
+-   **AI Model**: Google's Veo 3.1 for cutting-edge video generation.
+-   **Database**: Firestore for storing and managing your stories.
+-   **Storage**: Google Cloud Storage for hosting all your video assets.
 
-- Node.js ≥18.17
-- Google Cloud Project with Vertex AI API enabled
-- GCP project (`tubi-gemini-sandbox` configured by default)
-- Application Default Credentials configured (via `gcloud auth application-default login`)
-- Watchman (for Expo file watching; install via `brew install watchman`)
+## Getting Started
 
-### 2. Environment Setup
+### Prerequisites
 
-Copy `env.example` to `.env` in the **project root** (or `backend/.env`) and fill in:
+-   Node.js (v18.17 or higher)
+-   A Google Cloud Project with the Vertex AI API enabled.
+-   `gcloud` CLI installed and authenticated (`gcloud auth application-default login`).
+-   Watchman for the Expo file watcher (`brew install watchman`).
 
-```bash
-# Required
-GOOGLE_PROJECT_ID=tubi-gemini-sandbox
-GCS_ASSETS_BUCKET=tubi-veo-assets  # or your own bucket name
+### Installation
 
-# Optional (defaults shown)
-VEO_MODEL_DEFAULT=veo-3.1-generate-preview
-VEO_MODEL_FAST=veo-3.1-fast-generate-preview
-DEFAULT_SEGMENT_SECONDS=8
-MAX_STORY_DURATION_SECONDS=90
-VEO_POLL_INTERVAL_MS=10000
-PORT=4000
-```
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/bbassetttubi/tag-hack.git
+    cd tag-hack
+    ```
 
-### 3. Install Dependencies
+2.  **Set Up Environment Variables**:
+    Create a `.env` file in the root of the project and add your Google Cloud Project ID and GCS bucket name:
+    ```
+    GOOGLE_PROJECT_ID=your-gcp-project-id
+    GCS_ASSETS_BUCKET=your-gcs-bucket-name
+    ```
 
-```bash
-cd backend && npm install
-cd ../frontend && npm install
-```
+3.  **Install Dependencies**:
+    ```bash
+    # Install backend dependencies
+    cd backend
+    npm install
 
-### 4. Run the Application
+    # Install frontend dependencies
+    cd ../frontend
+    npm install
+    ```
 
-From the project root:
+### Running the App
 
-```bash
-./scripts/start.sh
-```
+1.  **Start the Development Servers**:
+    From the root of the project, run:
+    ```bash
+    ./scripts/start.sh
+    ```
+    This will start the backend server, the Expo development server, and open the iOS simulator.
 
-This launches:
-- Backend REST API on `http://localhost:4000/api`
-- Expo dev server on `http://localhost:8081`
-- iOS Simulator (auto-opened)
-- Live logs in your terminal (Ctrl+C to stop tailing; services keep running)
+2.  **Stop the Servers**:
+    To stop all the running processes, use:
+    ```bash
+    ./scripts/stop.sh
+    ```
 
-### 5. Stop the Application
+## How It Works
 
-```bash
-./scripts/stop.sh
-```
+-   **Story Creation**: When you create a new story, the backend sends a request to the Veo API to generate the first video.
+-   **Adding Scenes**: When a new scene is added, the last frame of the previous video is used as a reference to ensure continuity.
+-   **Video Polling**: A background job on the backend polls the Veo API for the status of the video generation. Once complete, the video is downloaded and saved to Google Cloud Storage.
 
-Terminates backend, Expo, and clears ports `4000`, `8081`, `8082`, `9464`.
+## Contributing
 
-## User Flow
-
-1. **Create a Story**: On the home screen, enter a title, describe the opening scene with a prompt, choose a duration (`4s`, `6s`, or `8s`), and tap "Generate Scene". The backend submits the job to Veo via Vertex AI and returns a story ID.
-2. **Tag a Friend**: Navigate to the story detail view. The latest segment plays automatically. Enter a friend's name, describe their contribution, select duration, and tap "Send Tag". The backend uses Veo's image-to-video feature to maintain continuity from the previous segment's thumbnail.
-3. **Chain Continues**: Friends can keep tagging until the story reaches 90 seconds, at which point the backend marks it complete.
-
-## API Endpoints
-
-- `POST /api/stories` – Create a new story and initial segment
-- `POST /api/stories/:id/segments` – Append a segment (tag flow)
-- `GET /api/stories/:id` – Fetch story with all segments
-
-## Backend Components
-
-- **Config** (`src/config/env.ts`): Validates environment variables (via Joi) and exposes typed config.
-- **Services**:
-  - `veoClient.ts`: Vertex AI Veo client using google-auth-library
-  - `firestore.ts`: Firestore connection
-  - `storageService.ts`: GCS bucket operations, signed URLs
-  - `storyService.ts`: Story/segment CRUD, duration validation
-- **Jobs** (`src/jobs/veoJobPoller.ts`): Polls pending Veo jobs every 10s, downloads completed videos from GCS, uploads to asset bucket, updates Firestore.
-- **Observability** (`src/observability/tracing.ts`): OpenTelemetry + Prometheus metrics on port `9464`.
-
-## Frontend Components
-
-- **Screens**:
-  - `StoryHomeScreen.tsx`: Featured hero, story creation form, prompt suggestions
-  - `StoryDetailScreen.tsx`: Video player, segment history carousel, tag form
-- **Components**:
-  - `GradientBackground.tsx`: Tubi's purple-to-black gradient
-  - `Header.tsx`: Sticky header with title + action label
-  - `VideoPlayer.tsx`: Expo AV video playback (auto-play, controls)
-  - `StoryCard.tsx`: Thumbnail + metadata for a single segment
-  - `Tabs.tsx`: Reusable tab switcher
-- **Hooks**:
-  - `useStoryCreation.ts`: Submit new story with loading/error states
-  - `useSegmentAppend.ts`: Append segment with SWR revalidation
-- **Services** (`src/services/api.ts`): `useStory` (SWR), `createStory`, `appendSegment`
-
-## Key Constraints
-
-- **Duration**: Veo 3.1 supports `4`, `6`, or `8` second clips.
-- **Resolution**: 720p or 1080p (configurable, default 720p).
-- **Aspect Ratio**: 9:16 (portrait for mobile).
-- **Max Story Length**: 90 seconds total across all segments.
-- **Continuity**: Each new segment uses the previous segment's thumbnail as an image reference for image-to-video generation.
-- **Asset Expiry**: Signed GCS URLs valid for 7 days; adjust `SIGNED_URL_TTL_SECONDS` if needed.
-
-## Development Tips
-
-- Backend logs stream via `pino-pretty` in dev mode; check `.logs/backend.log` or `.logs/frontend.log` if you exit the tail.
-- Expo version warnings are non-blocking but can be resolved by running `npx expo install --fix`.
-- Observability metrics: `curl http://localhost:9464/metrics`
-
-## Troubleshooting
-
-- **Port conflicts**: Run `./scripts/stop.sh` to force-kill processes on 4000/8081.
-- **"EMFILE: too many open files"**: Install Watchman (`brew install watchman`) or raise `ulimit -n 4096`.
-- **NativeWind / Tailwind errors**: This project uses React Native StyleSheet (not Tailwind); if you see CSS errors, remove any lingering `global.css` imports.
-- **Firestore emulator**: Set `FIRESTORE_EMULATOR_HOST=localhost:8080` to use local emulator instead of production.
-
-## License
-
-Proprietary. For Tubi internal use only.
+This project is currently for internal use at Tubi. Please reach out to the project maintainers for more information on how to contribute.
