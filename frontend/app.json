@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Tubi Veo",
+    "slug": "tubi-veo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tubi.veo",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to capture videos.",
+        "NSMicrophoneUsageDescription": "This app uses the microphone to record audio.",
+        "NSPhotoLibraryUsageDescription": "This app accesses your photo library to select videos."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.tubi.veo"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Tubi Veo to access your microphone."
+        }
+      ]
+    ]
+  }
+}
+
